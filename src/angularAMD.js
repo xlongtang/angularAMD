@@ -1,6 +1,12 @@
 /*
  angularAMD v<%= cvars.proj_version %>
  (c) 2013-2014 Marcos Lin https://github.com/marcoslin/
+ ------------------------------------------------------
+ Add support for child views; Note that we assume that 
+ the child view is rooted at appContent. However, 
+ this hardcoded root can be abstracted into a function.
+ Yaosee Tech on 11/1/2016
+ -----------------------------------------------------
  License: MIT
 */
 
@@ -121,7 +127,7 @@ define(function () {
      */
     AngularAMD.prototype.route = function (config) {
         // Initialization not necessary to call this method.
-        var load_controller;
+        var load_controller, helperConfig = null;
 
         /*
         If `controllerUrl` is provided, load the provided Url using requirejs.  If `controller` is not provided
@@ -129,7 +135,11 @@ define(function () {
 
         Otherwise, attempt to load the controller using the controller name.  In the later case, controller name
         is expected to be defined as one of 'paths' in main.js.
-        */
+         */
+        if (config.hasOwnProperty('views') && config.views.appContent) {
+            helperConfig = config;
+            config = config.views.appContent;
+        }
         if ( config.hasOwnProperty('controllerUrl') ) {
             load_controller = config.controllerUrl;
             delete config.controllerUrl;
@@ -146,6 +156,10 @@ define(function () {
             }
         } else if (typeof config.controller === 'string') {
             load_controller = config.controller;
+        }
+
+        if (helperConfig) {
+            config = helperConfig;
         }
         
         // If controller needs to be loaded, append to the resolve property
